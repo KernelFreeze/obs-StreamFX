@@ -169,6 +169,20 @@ jobs:
         CMAKE_BUILD_TYPE: "RelWithDebInfo"
       run: |
         cmake --build "build/ci" --config ${{ env.CMAKE_BUILD_TYPE }} --target StreamFX
+    - name: "Packaging: Install InnoSetup"
+      if: startsWith( matrix.runner, 'windows' )
+      run: |
+        curl "-kL" "https://cdn.xaymar.com/ci/innosetup-6.2.1.exe" "-f" "--retry" "5" "-o" "inno.exe"
+        .\inno.exe /VERYSILENT /SP- /SUPPRESSMSGBOXES /NORESTART
+    - name: "Packaging"
+      shell: cmd
+      run: |
+        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /V10 ".\build\ci\installer.iss"
+    - name: "Artifacts"
+      uses: actions/upload-artifact@v1
+      with:
+        name: "${{ matrix.runner }}-${{ matrix.compiler }}-qt${{ matrix.qt }}"
+        path: "${{ github.workspace }}/build/package"
 
   macos:
     strategy:
